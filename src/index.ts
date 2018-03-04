@@ -19,8 +19,12 @@ export interface CheckerConfig {
 	value?: any;
 }
 
+export interface UrlConfig {
+	rules?: Record<string, CheckerConfig>;
+}
+
 export interface UrlsConfig {
-	[url: string]: Record<string, CheckerConfig | undefined>;
+	[url: string]: UrlConfig;
 }
 
 const allCheckers = [
@@ -37,6 +41,7 @@ async function collectForUrl(browser: puppeteer.Browser, url: string): Promise<C
 	};
 }
 
+// tslint:disable-next-line:cyclomatic-complexity
 export async function runForUrls(config: UrlsConfig): Promise<boolean> {
 	const browser = await puppeteer.launch();
 
@@ -59,10 +64,10 @@ export async function runForUrls(config: UrlsConfig): Promise<boolean> {
 			continue;
 		}
 
-		const urlCheckersConfig = config[url];
+		const urlConfig = config[url];
 
 		for (const checker of allCheckers) {
-			const checkerConfig = urlCheckersConfig[checker.name];
+			const checkerConfig = urlConfig.rules && urlConfig.rules[checker.name];
 			if (checkerConfig !== undefined && checkerConfig.enabled === false) {
 				continue;
 			}

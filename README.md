@@ -26,9 +26,11 @@ Config must have the following structure:
 ```javascript
 {
   "URL": {
-    "RULE-NAME": { // optional
-      "value": NEW_VALUE_FOR_RULE, // to override checker's default parameter
-      "enabled": false, // to disable checker for this page - by default all checkers are enabled
+    "rules": {
+      "RULE-NAME": { // optional
+        "value": NEW_VALUE_FOR_RULE, // to override checker's default parameter
+        "enabled": false, // to disable checker for this page - by default all checkers are enabled
+      }
     }
   },
 }
@@ -39,13 +41,17 @@ Example of simple config:
 ```json
 {
   "https://github.com": {
-    "requests-count": {
-      "value": 100
+    "rules": {
+      "requests-count": {
+        "value": 100
+      }
     }
   },
   "https://www.google.com": {
-    "requests-count": {
-      "enabled": false
+    "rules": {
+      "requests-count": {
+        "enabled": false
+      }
     }
   },
   "https://translate.google.com": {}

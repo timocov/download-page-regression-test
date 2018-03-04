@@ -7,15 +7,22 @@ import { ArgumentParser } from 'argparse';
 import { runForUrls, UrlsConfig } from '../index';
 
 function parseConfig(configPath: string): UrlsConfig {
+	const availableUrlKeys = ['rules'];
 	const content = fs.readFileSync(configPath, { encoding: 'utf-8' });
 	const config = JSON.parse(content);
 	if (typeof config !== 'object' || Array.isArray(config)) {
-		throw new Error(`Type of config must be object`);
+		throw new Error(`Config must be object`);
 	}
 
 	for (const url of Object.keys(config)) {
 		if (typeof config[url] !== 'object' || Array.isArray(config[url])) {
-			throw new Error(`Type of config for ${url} must be object`);
+			throw new Error(`Config for ${url} must be object`);
+		}
+
+		for (const key of Object.keys(config[url])) {
+			if (!availableUrlKeys.includes(key)) {
+				throw new Error(`Config for ${url} contains unknown key "${key}"`);
+			}
 		}
 	}
 
