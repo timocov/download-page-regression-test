@@ -1,6 +1,11 @@
-import { CheckerData, CheckerResult, RequestInfo } from './checker';
+import {
+	CheckerData,
+	ParameterlessChecker,
+	ParameterizedChecker,
+	RequestInfo,
+} from './checker';
 
-const enum Constants {
+const enum DefaultValues {
 	MaxDOMContentLoadedTime = 3000,
 	MaxLoadTime = 5000,
 	MaxRequestsCount = 30,
@@ -8,56 +13,76 @@ const enum Constants {
 	MaxTotalLoadedSize = 1048576,
 }
 
-export function checkDomContentLoadedTime(data: CheckerData): CheckerResult {
-	return {
-		success: data.loadingTimes.domContentLoaded < Constants.MaxDOMContentLoadedTime,
-		text: `DOMContentLoaded event is fired after ${time2Str(data.loadingTimes.domContentLoaded)}`,
-		additionalText: `passed: ${time2Str(Constants.MaxDOMContentLoadedTime)}`,
-	};
-}
-
-export function checkLoadTime(data: CheckerData): CheckerResult {
-	return {
-		success: data.loadingTimes.load < Constants.MaxLoadTime,
-		text: `load event is fired after ${time2Str(data.loadingTimes.load)}`,
-		additionalText: `passed: ${time2Str(Constants.MaxLoadTime)}`,
-	};
-}
-
-export function checkRequestsCount(data: CheckerData): CheckerResult {
-	return {
-		success: data.requests.length < Constants.MaxRequestsCount,
-		text: `total requests count is ${data.requests.length}`,
-		additionalText: `passed: ${Constants.MaxRequestsCount}`,
-	};
-}
-
-export function checkEntryHtmlSize(data: CheckerData): CheckerResult {
-	const entryPageRequest = data.requests.find((req: RequestInfo) => req.url === data.openedUrl);
-	const sizeStr = entryPageRequest !== undefined ? size2Str(entryPageRequest.encodedDataLength) : 'n/a';
-	return {
-		success: entryPageRequest !== undefined && entryPageRequest.encodedDataLength < Constants.MaxEntryHtmlSize,
-		text: `size of entry html file is ${sizeStr}`,
-		additionalText: `passed: ${size2Str(Constants.MaxEntryHtmlSize)}`,
-	};
-}
-
-export function checkTotalLoadedSize(data: CheckerData): CheckerResult {
-	const totalSize = data.requests.reduce((res: number, req: RequestInfo) => res + req.encodedDataLength, 0);
-	return {
-		success: totalSize < Constants.MaxTotalLoadedSize,
-		text: `total loaded size until load event is ${size2Str(totalSize)}`,
-		additionalText: `passed: ${size2Str(Constants.MaxTotalLoadedSize)}`,
-	};
-}
-
-export function checkHavingRedirect(data: CheckerData): CheckerResult {
-	return {
-		success: data.openedUrl === data.requestedUrl,
-		text: 'no redirects',
-		additionalText: `req: ${data.requestedUrl}, opened: ${data.openedUrl}`,
-	};
-}
+export const checkers: ReadonlyArray<ParameterizedChecker<number> | ParameterizedChecker<string> | ParameterlessChecker> = [
+	{
+		name: 'dom-content-loaded-time',
+		defValue: DefaultValues.MaxDOMContentLoadedTime,
+		check: (data: CheckerData, maxValue: number) => {
+			return {
+				success: data.loadingTimes.domContentLoaded < maxValue,
+				text: `DOMContentLoaded event is fired after ${time2Str(data.loadingTimes.domContentLoaded)}`,
+				additionalText: `passed: ${time2Str(maxValue)}`,
+			};
+		},
+	},
+	{
+		name: 'load-time',
+		defValue: DefaultValues.MaxLoadTime,
+		check: (data: CheckerData, maxValue: number) => {
+			return {
+				success: data.loadingTimes.load < maxValue,
+				text: `load event is fired after ${time2Str(data.loadingTimes.load)}`,
+				additionalText: `passed: ${time2Str(maxValue)}`,
+			};
+		},
+	},
+	{
+		name: 'no-redirects',
+		check: (data: CheckerData) => {
+			return {
+				success: data.openedUrl === data.requestedUrl,
+				text: 'no redirects',
+				additionalText: `req: ${data.requestedUrl}, opened: ${data.openedUrl}`,
+			};
+		},
+	},
+	{
+		name: 'requests-count',
+		defValue: DefaultValues.MaxRequestsCount,
+		check: (data: CheckerData, maxValue: number) => {
+			return {
+				success: data.requests.length < maxValue,
+				text: `total requests count is ${data.requests.length}`,
+				additionalText: `passed: ${maxValue}`,
+			};
+		},
+	},
+	{
+		name: 'entry-html-file-size',
+		defValue: DefaultValues.MaxEntryHtmlSize,
+		check: (data: CheckerData, maxValue: number) => {
+			const entryPageRequest = data.requests.find((req: RequestInfo) => req.url === data.openedUrl);
+			const sizeStr = entryPageRequest !== undefined ? size2Str(entryPageRequest.encodedDataLength) : 'n/a';
+			return {
+				success: entryPageRequest !== undefined && entryPageRequest.encodedDataLength < maxValue,
+				text: `size of entry html file is ${sizeStr}`,
+				additionalText: `passed: ${size2Str(maxValue)}`,
+			};
+		},
+	},
+	{
+		name: 'total-loaded-size',
+		defValue: DefaultValues.MaxTotalLoadedSize,
+		check: (data: CheckerData, maxValue: number) => {
+			const totalSize = data.requests.reduce((res: number, req: RequestInfo) => res + req.encodedDataLength, 0);
+			return {
+				success: totalSize < maxValue,
+				text: `total loaded size until load event is ${size2Str(totalSize)}`,
+				additionalText: `passed: ${size2Str(maxValue)}`,
+			};
+		},
+	},
+];
 
 function size2Str(size: number): string {
 	const suffixes = ['b', 'KB', 'MB'];

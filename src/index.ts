@@ -1,28 +1,30 @@
-#!/usr/bin/env node
-
 import * as puppeteer from 'puppeteer';
 
 import { getRequests } from './get-requests-until-load';
 import { getAverageLoadingTimes } from './get-loading-times';
 
-import { CheckerData, CheckerFunction } from './checkers/checker';
-
 import {
-	checkDomContentLoadedTime,
-	checkEntryHtmlSize,
-	checkHavingRedirect,
-	checkLoadTime,
-	checkRequestsCount,
-	checkTotalLoadedSize,
-} from './checkers/primitive-checkers';
+	CheckerData,
+	CheckerResult,
+	isCheckerParameterless,
+	ParameterizedChecker,
+} from './checkers/checker';
 
-const checkers: CheckerFunction[] = [
-	checkDomContentLoadedTime,
-	checkLoadTime,
-	checkHavingRedirect,
-	checkRequestsCount,
-	checkEntryHtmlSize,
-	checkTotalLoadedSize,
+import { checkers } from './checkers/primitive-checkers';
+
+export interface CheckerConfig {
+	enabled?: boolean;
+
+	// tslint:disable-next-line:no-any
+	value?: any;
+}
+
+export interface UrlsConfig {
+	[url: string]: Record<string, CheckerConfig | undefined>;
+}
+
+const allCheckers = [
+	...checkers,
 ];
 
 async function collectForUrl(browser: puppeteer.Browser, url: string): Promise<CheckerData> {
@@ -35,13 +37,17 @@ async function collectForUrl(browser: puppeteer.Browser, url: string): Promise<C
 	};
 }
 
-async function main(): Promise<void> {
+export async function runForUrls(config: UrlsConfig): Promise<boolean> {
 	const browser = await puppeteer.launch();
 
-	const urls = process.argv.slice(2);
-
 	let isSuccess = true;
-	for (const url of urls) {
+
+	function handleError(message: string): void {
+		console.error(message);
+		isSuccess = false;
+	}
+
+	for (const url of Object.keys(config)) {
 		console.log(url);
 
 		let data: CheckerData;
@@ -49,16 +55,37 @@ async function main(): Promise<void> {
 		try {
 			data = await collectForUrl(browser, url);
 		} catch (e) {
-			console.error(`Cannot get data for url ${url}: ${e.toString()}`);
-			isSuccess = false;
+			handleError(`Cannot get data for url ${url}: ${e.toString()}`);
 			continue;
 		}
 
-		for (const checker of checkers) {
-			const res = checker(data);
+		const urlCheckersConfig = config[url];
+
+		for (const checker of allCheckers) {
+			const checkerConfig = urlCheckersConfig[checker.name];
+			if (checkerConfig !== undefined && checkerConfig.enabled === false) {
+				continue;
+			}
+
+			let res: CheckerResult;
+
+			if (isCheckerParameterless(checker)) {
+				res = checker.check(data);
+			} else {
+				const param: typeof checker.defValue = checkerConfig !== undefined && checkerConfig.value !== undefined ? checkerConfig.value : checker.defValue;
+				if (typeof param !== typeof checker.defValue) {
+					handleError(`Wrong type for checker ${checker.name} in ${url}: expected=${typeof checker.defValue}, actual=${typeof param}`);
+					continue;
+				}
+
+				// we already know that type of defValue and parameter of check function are the same
+				// but this hack is here to prevent TypeScript errors about incompatible call signature
+				res = (checker as ParameterizedChecker<typeof param>).check(data, param);
+			}
+
 			const prefix = res.success ? '+' : '-';
 			const suffix = res.success ? '' : ` (${res.additionalText})`;
-			console.log(` ${prefix} ${res.text}${suffix}`);
+			console.log(` ${prefix} ${res.text}${suffix} [${checker.name}]`);
 
 			isSuccess = isSuccess && res.success;
 		}
@@ -68,9 +95,5 @@ async function main(): Promise<void> {
 
 	browser.close();
 
-	if (!isSuccess) {
-		process.exit(1);
-	}
+	return isSuccess;
 }
-
-main();

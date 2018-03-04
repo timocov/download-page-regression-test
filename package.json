@@ -4,10 +4,13 @@
   "version": "0.1.0",
   "description": "Check web pages with puppeteer",
   "author": "Eugene Timokhov",
+  "bin": "bin/download-page-regression-test.js",
   "dependencies": {
+    "argparse": "~1.0.10",
     "puppeteer": "~1.1.1"
   },
   "devDependencies": {
+    "@types/argparse": "~1.0.33",
     "@types/node": "~9.4.6",
     "@types/puppeteer": "~1.0.1",
     "tslint": "~5.9.0",
