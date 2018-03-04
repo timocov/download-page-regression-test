@@ -51,3 +51,40 @@ Example of simple config:
   "https://translate.google.com": {}
 }
 ```
+
+## Rules
+
+### dom-content-loaded-time
+
+*Default*: `3000`
+
+Checks when `DOMCOntentLoaded` event is fired (time in milliseconds).
+
+### load-time
+
+*Default*: `5000`
+
+Checks when `load` event is fired (time in milliseconds).
+
+### no-redirects
+
+Checks if after opening URL page is redirected to another page.
+
+### requests-count
+
+*Default*: `30`
+
+Count of requests which browser made until `load` event is fired.
+
+### entry-html-file-size
+
+*Default*: `14336` (14KB)
+
+Checks the size of opened page (transferred size) (size in bytes).
+
+
+### total-loaded-size
+
+*Default*: `1048576` (1MB)
+
+Checks the size of all made requests until `load` event is fired (transferred size) (size in bytes).
