@@ -30,9 +30,7 @@ function parseConfig(configPath: string): UrlsConfig {
 }
 
 function main(): void {
-	const argsParser = new ArgumentParser({
-		version: process.env.package_config_version,
-	});
+	const argsParser = new ArgumentParser();
 
 	argsParser.addArgument(
 		['--config'],

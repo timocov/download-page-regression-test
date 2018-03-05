@@ -18,6 +18,7 @@
   },
   "scripts": {
     "compile": "tsc",
-    "lint": "tslint --project tsconfig.json --config tslint.json"
+    "lint": "tslint --project tsconfig.json --config tslint.json",
+    "prepare-release": "npm run compile && node build/index.js && npm run lint && node build/prod-ready"
   }
 }
