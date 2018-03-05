@@ -4,6 +4,8 @@ import * as fs from 'fs';
 
 import { ArgumentParser } from 'argparse';
 
+import { LaunchOptions } from 'puppeteer';
+
 import { runForUrls, UrlsConfig } from '../index';
 
 function parseConfig(configPath: string): UrlsConfig {
@@ -31,6 +33,17 @@ function parseConfig(configPath: string): UrlsConfig {
 
 function main(): void {
 	const argsParser = new ArgumentParser();
+
+	argsParser.addArgument(
+		['--no-sandbox'],
+		{
+			dest: 'noSandbox',
+			help: 'Disables Chrome sandbox',
+			type: Boolean,
+			action: 'storeTrue',
+			defaultValue: false,
+		}
+	);
 
 	argsParser.addArgument(
 		['--config'],
@@ -70,7 +83,12 @@ function main(): void {
 		}
 	}
 
-	const runPromise = runForUrls(urlsConfig);
+	const options: LaunchOptions = {};
+	if (args.noSandbox) {
+		options.args = ['--no-sandbox', '--disable-setuid-sandbox'];
+	}
+
+	const runPromise = runForUrls(urlsConfig, options);
 	runPromise.then((isSuccess: boolean) => {
 		process.exit(isSuccess ? 0 : 1);
 	});

@@ -42,8 +42,8 @@ async function collectForUrl(browser: puppeteer.Browser, url: string): Promise<C
 }
 
 // tslint:disable-next-line:cyclomatic-complexity
-export async function runForUrls(config: UrlsConfig): Promise<boolean> {
-	const browser = await puppeteer.launch();
+export async function runForUrls(config: UrlsConfig, puppeteerOptions?: puppeteer.LaunchOptions): Promise<boolean> {
+	const browser = await puppeteer.launch(puppeteerOptions);
 
 	let isSuccess = true;
 
