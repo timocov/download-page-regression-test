@@ -1,5 +1,7 @@
 # load-page-regression-test
 
+[![npm version](https://badge.fury.io/js/load-page-regression-test.svg)](https://badge.fury.io/js/load-page-regression-test)
+
 This tool allows you check some performance values of your page.
 It uses [puppeteer](https://github.com/GoogleChrome/puppeteer) to opening the page and getting performance values from it.
 
