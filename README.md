@@ -1,4 +1,4 @@
-# download-page-regression-test
+# load-page-regression-test
 
 This tool allows you check some performance values of your page.
 It uses [puppeteer](https://github.com/GoogleChrome/puppeteer) to opening the page and getting performance values from it.
@@ -8,13 +8,13 @@ It uses [puppeteer](https://github.com/GoogleChrome/puppeteer) to opening the pa
 To run with config (see below):
 
 ```bash
-download-page-regression-test --config path/to/config/file.json
+load-page-regression-test --config path/to/config/file.json
 ```
 
 or to run with default checkers' parameters:
 
 ```bash
-download-page-regression-test https://github.com https://google.com
+load-page-regression-test https://github.com https://google.com
 ```
 
 ## Config

@@ -1,16 +1,16 @@
 {
   "private": true,
-  "name": "download-page-regression-test",
+  "name": "load-page-regression-test",
   "version": "0.1.0",
   "description": "Tools to check web pages' download performance with puppeteer",
   "author": "Eugene Timokhov",
-  "bin": "bin/download-page-regression-test.js",
+  "bin": "bin/load-page-regression-test.js",
   "bugs": {
-    "url": "https://github.com/timocov/download-page-regression-test/issues"
+    "url": "https://github.com/timocov/load-page-regression-test/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/timocov/download-page-regression-test.git"
+    "url": "git+https://github.com/timocov/load-page-regression-test.git"
   },
   "dependencies": {
     "argparse": "~1.0.10",
